@@ -1,31 +1,15 @@
-# Redshift Data Warehouse
+# ETL with Postgres
 
-This project copies log and song data from S3 buckets to Redshift.  This is done by first copying the data to Redshift staging tables, and then into analytics tables with a star schema.
+This project creates a database of song and artist data and logs of user activity.  The project utilizes the star schema, with 4 fact tables: songs, artists, times, and users, and 1 dimension table: song plays.  3 Python modules, which utilize the Pandas and psycopg2 libraries, extract the data from log files, transform it, and load it into Postgres.
 
-### Getting Started
+Duplicate inserts into the artists and songs are ignored.  Duplicate inserts into the user table results in the user's level being updated.
 
-- The project can be run from whatever folder the Python scripts are located in
+The create_tables module will create the Sparkify database and the 5 tables.  If the Sparkify database already exists, it will be dropped first and created new.
 
-### Requirements
+Use `python3 create_tables.py` to run.
 
-- ```dwh.cfg``` must exist and be accessible to the Python scripts.  This file must contain the login info for the cluster.  It must also have the ARN for an IAM Role with read access to the S3 buckets.
+The `sql_queries` module is used by both the `create_tables` and `etl` modules.
 
-- configparser and psycopg2 Python modules must be installed and accessible to the Python interpreter
+The `etl` module will scan the song and log data folders, create a list of files, and load them all into the Sparkify db.
 
-### Python Scripts
-
-- ```sql_queries.py```
-
-Contains the queries for ```drop```, ```create```, ```copy``` and ```insert``` commands.  These are passed to the other Python files.
-
-- ```create_tables.py```
-
-Connects to the Redshift cluster via the ```psycopg2``` module and creates the required tables.  Existing tables are dropped if they exist.  
-
-- ```etl.py```
-
-Connects to the Redshift cluster via the ```psycopg2``` module and first copies the required data from S3 buckets to the Redshift staging tables.  Then performs inserts via SQL queries to populate the analytics tables.
-
-### Testing
-
-The cluster can be queried to verify successful table creation and loads/inserts.  Redshift creates the tables under a "public" schema.
+Run with `python3 etl.py`
